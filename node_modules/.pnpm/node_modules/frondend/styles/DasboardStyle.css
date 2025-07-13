@@ -1,0 +1,329 @@
+/* Dashboard Layout - Grid System */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.dashboard-sidebar {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-main {
+  grid-column: 2;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Sidebar Styles */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.sidebar-icon {
+  color: #4fd1c5;
+}
+
+.sidebar-title {
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar {
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid #4fd1c5;
+}
+
+.user-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.user-status {
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+.sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background-color: rgba(79, 209, 197, 0.1);
+  color: white;
+  transform: translateX(3px);
+}
+
+.nav-item .nav-icon {
+  font-size: 1.1rem;
+}
+
+/* Main Content Styles */
+.main-header {
+  margin-bottom: 2rem;
+}
+
+.main-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.title-icon {
+  color: #4fd1c5;
+}
+
+.header-divider {
+  height: 3px;
+  width: 60px;
+  background: linear-gradient(90deg, #4fd1c5 0%, #4299e1 100%);
+  margin: 0.5rem 0 1.5rem;
+  border-radius: 3px;
+}
+
+/* Section Styles */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1.25rem;
+}
+
+.section-icon {
+  color: #4fd1c5;
+}
+
+/* Login History Section */
+.login-history-section {
+  margin-bottom: 2rem;
+}
+
+.history-scroller {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #edf2f7;
+}
+
+.history-scroller::-webkit-scrollbar {
+  height: 6px;
+}
+
+.history-scroller::-webkit-scrollbar-track {
+  background: #edf2f7;
+  border-radius: 10px;
+}
+
+.history-scroller::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 10px;
+}
+
+/* Feature Usage Section */
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Empty and Loading States */
+.empty-message, .error-message {
+  color: #718096;
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #4a5568;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .dashboard-main {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  .sidebar-navigation {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav-item {
+    flex: 1 1 160px;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+  
+  .main-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* Feature Usage Section with Scroll */
+.feature-usage-card {
+  height: 100%; /* Takes full height of its container */
+}
+
+.feature-scroll-container {
+  height: calc(100vh - 300px); /* Adjust based on your layout */
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.feature-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Custom scrollbar styling */
+.feature-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.feature-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.feature-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.feature-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure cards don't stretch too wide */
+.feature-list {
+  max-width: 100%;
+  min-width: 0; /* Prevent flex items from overflowing */
+}
+
+/* Tombol Logout */
+.logout-button {
+  margin-top: auto; /* Posisikan di bagian bawah */
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.logout-button:hover {
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+
+/* Jarak antara menu dan tombol logout */
+.sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  padding-bottom: 1rem;
+}
+
+/* Tambahan styling untuk navigasi */
+.sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  padding-bottom: 1rem;
+}
+
+/* Memastikan tombol logout tetap di bawah */
+.logout-button {
+  margin-top: auto;
+}
+
+/* Style untuk tombol navigasi aktif */
+.nav-item.active {
+  background-color: rgba(79, 209, 197, 0.1);
+  border-left: 3px solid #4fd1c5;
+}

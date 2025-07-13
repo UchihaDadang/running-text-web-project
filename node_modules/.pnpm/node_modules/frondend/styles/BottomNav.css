@@ -1,0 +1,12 @@
+.nav-icon {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-icon:hover {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff !important;
+}

@@ -13,6 +13,7 @@ import {
 import RunningTextModal from "../../src/components/modals/RunningTextModal";
 import ClockModal from "../../src/components/modals/ClockModal";
 import TemperatureModal from "../../src/components/modals/TemperatureModal";
+import DateModal from "../../src/components/modals/DateModal";
 import FeatureUsageCard from "../../src/components/FeatureUsageCard";
 import LoginHistoryCard from "../../src/components/LoginHistoryCard";
 import { UserContext } from "../../src/contexts/userContext";
@@ -27,7 +28,8 @@ export default function DesktopDashboardLayout() {
   const [modals, setModals] = useState({
     text: false,
     clock: false,
-    temp: false
+    temp: false,
+    date: false
   });
   const [dashboardData, setDashboardData] = useState({
     featureUsage: [],
@@ -215,6 +217,14 @@ export default function DesktopDashboardLayout() {
           <Button 
             variant="light" 
             className="nav-item"
+            onClick={() => toggleModal("date")}
+          >
+            <FiThermometer className="nav-icon" />
+            <span>Pengaturan Tanggal</span>
+          </Button>
+          <Button 
+            variant="light" 
+            className="nav-item"
             onClick={goToLoginHistory}
           >
             <FiList className="nav-icon" />
@@ -327,6 +337,10 @@ export default function DesktopDashboardLayout() {
       <TemperatureModal 
         show={modals.temp} 
         onClose={() => toggleModal("temp")} 
+      />
+      <DateModal 
+      show={modals.date}
+      onClose={() => toggleModal("date")}
       />
     </div>
   );

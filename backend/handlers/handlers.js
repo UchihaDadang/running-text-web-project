@@ -445,10 +445,10 @@ export const handleEditText = async (request, h) => {
     await db.query(
       `INSERT INTO feature_usage_history (user_id, name, feature, change_description, used_at)
       VALUES (?, ?, 'Edit Text', ?, NOW())`,
-      [user.id, fullName, `Teks diubah menjadi: ${text}`]
+      [user.id, fullName, text]
     );
 
-    return h.response({ success: true, message: 'Teks berhasil diperbarui.' }).code(200);
+    return h.response({ success: true, message: 'Teks berhasil di perbarui.' }).code(200);
   } catch (error) {
     console.error("Error di handleEditText:", error);
     return h.response({ success: false, message: 'Gagal menyimpan data.' }).code(500);

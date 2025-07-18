@@ -701,108 +701,161 @@ export const getTime = async (request, h) => {
   }
 };
 
+// Handler terpadu untuk semua operasi suhu
+export const handleTemperature = async (request, h) => {
+  const { temperature, mode, source = 'user' } = request.payload;
+  const user = request.auth.credentials;
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+
+  try {
+    // Validasi input
+    if (typeof temperature !== 'number') {
+      return h.response({
+        status: 'error',
+        message: 'Format suhu tidak valid'
+      }).code(400);
+    }
+
+    // Mulai transaction
+    await db.query('START TRANSACTION');
+
+    // 1. Simpan ke tabel histori (temperature_data)
+    await db.query(
+      `INSERT INTO temperature_data 
+       (temperature, mode, source)
+       VALUES (?, ?, ?)`,
+      [temperature, mode, source]
+    );
+
+    // 2. Update tampilan aktif (display_temperature)
+    // Nonaktifkan semua record sebelumnya
+    await db.query(
+      `UPDATE display_temperature SET is_active = FALSE`
+    );
+
+    // Tambahkan record baru sebagai aktif
+    await db.query(
+      `INSERT INTO display_temperature 
+       (temperature, mode, source, is_active)
+       VALUES (?, ?, ?, TRUE)`,
+      [temperature, mode, source]
+    );
+
+    // 3. Catat di history (hanya untuk input manual/user)
+    if (source === 'user') {
+      await db.query(
+        `INSERT INTO feature_usage_history 
+         (user_id, name, feature, change_description, used_at)
+         VALUES (?, ?, 'temperature', ?, NOW())`,
+        [user.id, fullName, `Set temperature to ${temperature}°C (${mode})`]
+      );
+    }
+
+    // Commit transaction
+    await db.query('COMMIT');
+
+    return h.response({
+      status: 'success',
+      data: { temperature, mode, source }
+    }).code(200);
+
+  } catch (err) {
+    // Rollback jika error
+    await db.query('ROLLBACK');
+    console.error('Database error:', err);
+    
+    return h.response({
+      status: 'error',
+      message: err.sqlMessage || 'Gagal menyimpan suhu'
+    }).code(500);
+  }
+};
+
+// Handler khusus untuk sensor
 export const receiveSensorTemperature = async (request, h) => {
   const { temperature } = request.payload;
 
   try {
-    // Simpan ke log
-    await db.query(
-      `INSERT INTO temperature_data (temperature, mode, source) VALUES (?, 'auto', 'sensor')`,
-      [temperature]
+    // Dapatkan mode aktif terakhir
+    const [modeRow] = await db.query(
+      `SELECT mode FROM display_temperature 
+       WHERE is_active = TRUE 
+       ORDER BY created_at DESC 
+       LIMIT 1`
     );
 
-    // Simpan ke tampilan display (hanya sekali yang paling baru)
-    await db.query(
-      `INSERT INTO display_temperature (temperature, mode, created_at, updated_at)
-       VALUES (?, 'auto', NOW(), NOW())`,
-      [temperature]
-    );
+    const currentMode = modeRow.length > 0 ? modeRow[0].mode : 'auto';
 
-    return h.response({ status: "success", message: "Data suhu dari sensor berhasil disimpan & ditampilkan." }).code(200);
+    // Jika mode auto, update temperature
+    if (currentMode === 'auto') {
+      return handleTemperature({
+        payload: { 
+          temperature, 
+          mode: 'auto',
+          source: 'sensor' 
+        },
+        auth: { credentials: {} } // Fake user object untuk sensor
+      }, h);
+    }
+
+    return h.response({ 
+      status: "success",
+      message: "Sensor data received (system in manual mode)"
+    }).code(200);
+
   } catch (err) {
-    console.error("Error simpan suhu sensor:", err);
-    return h.response({ status: "error", message: "Gagal simpan suhu." }).code(500);
+    console.error('Sensor handler error:', err);
+    return h.response({
+      status: 'error',
+      message: 'Failed to process sensor data'
+    }).code(500);
   }
 };
 
-export const saveManualTemperature = async (request, h) => {
-  const { temperature, mode } = request.payload;
-  const user = request.auth.credentials;
-
-  try {
-    await db.query(
-      `INSERT INTO temperature_data (temperature, mode, source) VALUES (?, ?, 'user')`,
-      [temperature, mode]
-    );
-
-    await db.query(
-      `INSERT INTO feature_usage_history (user_id, name, feature, change_description, used_at)
-       VALUES (?, ?, 'Edit Temperature', ?, NOW())`,
-      [
-        user.id,
-        `${user.first_name} ${user.last_name}`,
-        `Suhu diubah menjadi: ${temperature}°C (${mode})`
-      ]
-    );
-
-    return h.response({ status: "success", message: "Suhu berhasil disimpan." }).code(200);
-  } catch (err) {
-    console.error("Error simpan suhu manual:", err);
-    return h.response({ status: "error", message: "Gagal menyimpan suhu." }).code(500);
-  }
-};
-
-export const handleTemperature = async (request, h) => {
-  const { temperature, mode } = request.payload;
-  const user = request.auth.credentials;
-
-  try {
-    // Simpan ke display_temperature (untuk ditampilkan ke IoT)
-    await db.query(
-      `INSERT INTO display_temperature (temperature, mode, created_at, updated_at)
-       VALUES (?, ?, NOW(), NOW())`,
-      [temperature, mode]
-    );
-
-    // Simpan ke temperature_data (log lengkap)
-    await db.query(
-      `INSERT INTO temperature_data (temperature, mode, source)
-       VALUES (?, ?, 'user')`,
-      [temperature, mode]
-    );
-
-    // Simpan ke riwayat
-    await db.query(
-      `INSERT INTO feature_usage_history (user_id, name, feature, change_description, used_at)
-       VALUES (?, ?, 'Edit Temperature', ?, NOW())`,
-      [
-        user.id,
-        `${user.first_name} ${user.last_name}`,
-        `Suhu diubah menjadi: ${temperature}°C (${mode})`
-      ]
-    );
-
-    return h.response({ status: "success", message: "Suhu berhasil disimpan." }).code(200);
-  } catch (err) {
-    console.error("Error simpan suhu:", err);
-    return h.response({ status: "error", message: "Gagal menyimpan suhu." }).code(500);
-  }
-};
-
+// Get current display temperature
 export const getTemperature = async (request, h) => {
   try {
     const [rows] = await db.query(
-      `SELECT temperature, mode FROM display_temperature ORDER BY id DESC LIMIT 1`
+      `SELECT temperature, mode, source 
+       FROM display_temperature 
+       WHERE is_active = TRUE 
+       ORDER BY created_at DESC 
+       LIMIT 1`
     );
 
     if (rows.length === 0) {
-      return h.response({ status: "empty", message: "Belum ada data suhu." }).code(404);
+      // Fallback ke data terakhir jika tidak ada yang aktif
+      const [fallback] = await db.query(
+        `SELECT temperature, mode, source 
+         FROM temperature_data 
+         ORDER BY created_at DESC 
+         LIMIT 1`
+      );
+      
+      if (fallback.length > 0) {
+        return h.response({ 
+          status: "success", 
+          data: fallback[0] 
+        }).code(200);
+      }
+
+      return h.response({ 
+        status: "empty", 
+        message: "No temperature data available" 
+      }).code(404);
     }
 
-    return h.response({ status: "success", data: rows[0] }).code(200);
+    return h.response({ 
+      status: "success", 
+      data: rows[0] 
+    }).code(200);
+
   } catch (err) {
-    console.error("Error get-temperature:", err);
-    return h.response({ status: "error", message: "Gagal mengambil data suhu." }).code(500);
+    console.error("Get temperature error:", err);
+    return h.response({ 
+      status: "error", 
+      message: "Failed to get temperature" 
+    }).code(500);
   }
 };
 
